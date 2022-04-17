@@ -1,11 +1,8 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 const https = require('https');
-
-
-const username = ''
-const password = ''
-
+const creds = require('./credentials');
+// const dpath = path.resolve('./download');
 
 async function downloadNotes(url, courseCode) {
     const browser = await puppeteer.launch({
@@ -14,8 +11,8 @@ async function downloadNotes(url, courseCode) {
 
     const page = await browser.newPage()
     await page.goto(url)
-    await page.type('#username', username)
-    await page.type('#password', password)
+    await page.type('#username', creds.username)
+    await page.type('#password', creds.password)
     await Promise.all([
         page.click('#loginbtn'),
         page.waitForNavigation({waitUntil: 'networkidle0'}),
@@ -24,7 +21,7 @@ async function downloadNotes(url, courseCode) {
     const docUrls = await page.$$eval('.aalink', docElms => {
         const urls = [];
         docElms.forEach(elm => {
-            urls.push(elm.src);
+            urls.push(elm.href);
         })
         return urls
     })
@@ -42,4 +39,4 @@ async function downloadNotes(url, courseCode) {
     browser.close()
 }
 
-downloadNotes('')
+downloadNotes('https://elearning.pau.edu.ng/course/view.php?id=1649','ISM210')
