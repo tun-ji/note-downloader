@@ -26,17 +26,24 @@ async function downloadNotes(url, courseCode) {
         return urls
     })
     
-    docUrls.forEach((url, index) => {
-        https.get(url, res => {
-            const stream = fs.createWriteStream(`${courseCode}-lecture-${index}.pdf`);
-            res.pipe(stream);
+    await docUrls.forEach((url, index) => {
+        https.get(url, async function resolve(res) { try {
+            await page.goto(url);
+            await page.pdf({
+                path: fs.createWriteStream(`${courseCode}-lecture-${index}.pdf`),
+                format: 'A4',
+                printBackground: true
+            });
+            await res.pipe(page.pdf.path);
             stream.on('finish', () => {
                 stream.close();
             })
-        })
+        } catch (e) {
+            console.log(`Error loading ${e}`)
+        }})
     })
-
-    browser.close()
+    
+    await browser.close()
 }
 
-downloadNotes('https://elearning.pau.edu.ng/course/view.php?id=1649','ISM210')
+downloadNotes('','')
